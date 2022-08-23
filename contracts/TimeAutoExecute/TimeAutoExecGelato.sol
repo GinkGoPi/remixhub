@@ -18,4 +18,11 @@ contract TimeAutoExecGelato {
         }
     }
 
+    // function convert(address _activePool, address _basePool) external {
+    //     uint balance = IActive(_activePool).totalEarn();
+    //     IActive(_activePool).withdraw(balance);
+    //     ISwap(_basePool).swap();
+        
+    // }
+
 }
