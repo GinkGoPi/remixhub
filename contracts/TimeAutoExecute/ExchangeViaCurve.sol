@@ -75,7 +75,7 @@ contract ExchangeViaCurve {
         // console.log("min_dy", min_dy);
         // IERC20(USDAToken).allowance(address(this), usda3PoolAddress);
         IERC20(USDAToken).approve(usda3PoolAddress, 1000);
-        ICurve(usda3PoolAddress).exchange_underlying(0, 3, 1000, min_dy, msg.sender);
+        ICurve(usda3PoolAddress).exchange_underlying(0, 3, 1000, min_dy);
         return min_dy;
     }
 
@@ -98,7 +98,7 @@ contract ExchangeViaCurve {
         min_dy = ICurve(usda3PoolAddress).get_dy_underlying(0, 1, toExchange);
         // console.log("min_dy", min_dy);
         IERC20(USDAToken).approve(usda3PoolAddress, toExchange);
-        ICurve(usda3PoolAddress).exchange_underlying(0, 3, toExchange, min_dy, msg.sender);
+        ICurve(usda3PoolAddress).exchange_underlying(0, 3, toExchange, min_dy);
 
         // // USDT => wETH
         // uint tBalance = IERC20(USDTToken).balanceOf(address(this));
