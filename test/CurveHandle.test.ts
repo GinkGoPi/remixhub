@@ -12,7 +12,7 @@ describe("contract", () => {
 
     const setupTest = deployments.createFixture(
         async ({ deployments, ethers }) => {
-            await deployments.fixture() 
+            await deployments.fixture(["CurveHandle"]) 
 
             const signers = await ethers.getSigners();
             [ deployer, owner, bob ] = signers
@@ -115,24 +115,24 @@ describe("contract", () => {
             console.log("remain USDT", await contract.getBalanceOfUSDT())
         })
 
-        it("swap To ETH", async () => {
-            await mockBalance()
-            console.log("before sourceAsset", await contract.getBalanceOfUSDA())
-            console.log("before USDT", await contract.getBalanceOfUSDT())
+        // it("swap To ETH", async () => {
+        //     await mockBalance()
+        //     console.log("before sourceAsset", await contract.getBalanceOfUSDA())
+        //     console.log("before USDT", await contract.getBalanceOfUSDT())
 
-            await contract.swapToUSDT()
-            console.log("exchange sourceAsset", await contract.getBalanceOfUSDA())
-            console.log("exchange USDT", await contract.getBalanceOfUSDT())
+        //     await contract.swapToUSDT()
+        //     console.log("exchange sourceAsset", await contract.getBalanceOfUSDA())
+        //     console.log("exchange USDT", await contract.getBalanceOfUSDT())
 
-            console.log("before wETH balance", await contract.getBalanceOfwETH())
-            console.log("before account balance", await ethers.provider.getBalance(contract.address))
+        //     console.log("before wETH balance", await contract.getBalanceOfwETH())
+        //     console.log("before account balance", await ethers.provider.getBalance(contract.address))
             
-            // await contract.swapTowETH(true)
-            await contract.swapTowETH(true, { gasLimit: 2e7 })
-            console.log("after account balance", await ethers.provider.getBalance(contract.address))
+        //     // await contract.swapTowETH(true)
+        //     await contract.swapTowETH(true, { gasLimit: 2e7 })
+        //     console.log("after account balance", await ethers.provider.getBalance(contract.address))
 
-            console.log("has wETH", await contract.getBalanceOfwETH())
-            console.log("remain USDT", await contract.getBalanceOfUSDT())
-        })
+        //     console.log("has wETH", await contract.getBalanceOfwETH())
+        //     console.log("remain USDT", await contract.getBalanceOfUSDT())
+        // })
     })
 })

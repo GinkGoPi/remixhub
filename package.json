@@ -6,6 +6,7 @@
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@openzeppelin/contracts": "^4.7.3",
     "@typechain/truffle-v5": "^8.0.1",
+    "@uniswap/v3-periphery": "^1.4.1",
     "hardhat-deploy": "^0.11.12",
     "hardhat-typechain": "^0.3.5"
   },
