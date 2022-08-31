@@ -27,7 +27,7 @@ const config: HardhatUserConfig = {
   },
   paths: {
     // sources: './contracts/CurveHandle',    // special dir
-    sources: './contracts/PushStake',    // special dir
+    sources: './contracts/ArchiOracles',    // special dir
     artifacts: "./build/artifacts",
     cache: "./build/cache",
   },
