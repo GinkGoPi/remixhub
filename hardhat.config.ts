@@ -7,6 +7,9 @@ import '@nomiclabs/hardhat-waffle'
 
 import "hardhat-gas-reporter"
 
+// import "hardhat-ethernal"
+
+
 import {HardhatUserConfig} from 'hardhat/types'
 
 const config: HardhatUserConfig = {
@@ -27,7 +30,7 @@ const config: HardhatUserConfig = {
   },
   paths: {
     // sources: './contracts/CurveHandle',    // special dir
-    sources: './contracts/ArchiOracles',    // special dir
+    sources: './contracts/Archi-contracts-v2',    // special dir
     artifacts: "./build/artifacts",
     cache: "./build/cache",
   },
