@@ -1,0 +1,118 @@
+{
+  "address": "0xCcB70a1D3479cd8305e844cc12555af15F7D586c",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "get",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_price",
+          "type": "uint256"
+        }
+      ],
+      "name": "setPrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x1f1265f985f5fddcd0465d02e566998566cb3e669760a514b4ac4f11e1473f3e",
+  "receipt": {
+    "to": null,
+    "from": "0x459A0136E53B122e902f8bC9f13154c53C43aBF5",
+    "contractAddress": "0xCcB70a1D3479cd8305e844cc12555af15F7D586c",
+    "transactionIndex": 36,
+    "gasUsed": "221475",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x552ac7ebfd5dd2b6a106b7b1437d88087f940b3e39664f13ee5c5e667e4e21de",
+    "transactionHash": "0x1f1265f985f5fddcd0465d02e566998566cb3e669760a514b4ac4f11e1473f3e",
+    "logs": [],
+    "blockNumber": 7589228,
+    "cumulativeGasUsed": "9668289",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "8bd4e6f0044b7c7376be64662865fad8",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.7+commit.e28d00a7\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_price\",\"type\":\"uint256\"}],\"name\":\"setPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/Archi-contracts-v2/mocks/Oracle.sol\":\"Oracle\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/Archi-contracts-v2/mocks/Oracle.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.7;\\n\\n\\n\\ncontract Oracle {\\n    address public owner;\\n    uint private _oraclePrice = 997701199588776094;\\n\\n    constructor() {\\n        owner = msg.sender;\\n    }\\n\\n    function setPrice(uint _price) external {\\n        _oraclePrice = _price;\\n    }\\n\\n    function get() external view returns (bool, uint) {\\n        return (true, _get());\\n    } \\n\\n    function _get() internal view returns (uint) {\\n        return _oraclePrice;\\n    }\\n\\n    function _min(uint a, uint b) internal pure returns (uint) {\\n        return a < b ? a : b;\\n    }\\n\\n}\",\"keccak256\":\"0xcc69f325483d6a7b910088c0ae63ac1a3cdf91a695d09e8b37211b458c9b3e15\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x6080604052670dd88bf47978589e60015534801561001c57600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055506102398061006c6000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c80636d4ce63c146100465780638da5cb5b1461006557806391b7f5ed14610083575b600080fd5b61004e61009f565b60405161005c929190610176565b60405180910390f35b61006d6100b4565b60405161007a919061015b565b60405180910390f35b61009d60048036038101906100989190610101565b6100d8565b005b60008060016100ac6100e2565b915091509091565b60008054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b8060018190555050565b6000600154905090565b6000813590506100fb816101ec565b92915050565b600060208284031215610117576101166101e7565b5b6000610125848285016100ec565b91505092915050565b6101378161019f565b82525050565b610146816101b1565b82525050565b610155816101dd565b82525050565b6000602082019050610170600083018461012e565b92915050565b600060408201905061018b600083018561013d565b610198602083018461014c565b9392505050565b60006101aa826101bd565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b600080fd5b6101f5816101dd565b811461020057600080fd5b5056fea2646970667358221220222fd6a4e606f39a59630dac46bc5d62fa540331d55ea6ecae2a1dd84d56e0db64736f6c63430008070033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c80636d4ce63c146100465780638da5cb5b1461006557806391b7f5ed14610083575b600080fd5b61004e61009f565b60405161005c929190610176565b60405180910390f35b61006d6100b4565b60405161007a919061015b565b60405180910390f35b61009d60048036038101906100989190610101565b6100d8565b005b60008060016100ac6100e2565b915091509091565b60008054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b8060018190555050565b6000600154905090565b6000813590506100fb816101ec565b92915050565b600060208284031215610117576101166101e7565b5b6000610125848285016100ec565b91505092915050565b6101378161019f565b82525050565b610146816101b1565b82525050565b610155816101dd565b82525050565b6000602082019050610170600083018461012e565b92915050565b600060408201905061018b600083018561013d565b610198602083018461014c565b9392505050565b60006101aa826101bd565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6000819050919050565b600080fd5b6101f5816101dd565b811461020057600080fd5b5056fea2646970667358221220222fd6a4e606f39a59630dac46bc5d62fa540331d55ea6ecae2a1dd84d56e0db64736f6c63430008070033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 2936,
+        "contract": "contracts/Archi-contracts-v2/mocks/Oracle.sol:Oracle",
+        "label": "owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 2939,
+        "contract": "contracts/Archi-contracts-v2/mocks/Oracle.sol:Oracle",
+        "label": "_oraclePrice",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_uint256"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_uint256": {
+        "encoding": "inplace",
+        "label": "uint256",
+        "numberOfBytes": "32"
+      }
+    }
+  }
+}

@@ -4,12 +4,10 @@ pragma solidity ^0.8.7;
 import "./libraries/BoringRebase.sol";
 import "./libraries/BoringERC20.sol";
 
-// import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
 import "hardhat/console.sol";
 
 interface IOracle {
-    function get() external returns (uint rate);
+    function get() external view returns (bool, uint);
 }
 
 interface IVaultV1 {
@@ -24,11 +22,15 @@ interface IVaultV1 {
 }
 
 
-contract TroveForCvx3crv {
+contract Cvx3crvTrove {
     using RebaseLibrary for Rebase;
     using BoringERC20 for IERC20;
-    // using SafeMath for uint128;
-    // using SafeMath for uint;
+
+    event LogAccrue(uint128 accruedAmount);
+    event LogAddCollateral(address indexed from, address indexed to, uint256 share);
+    event LogWithdrawCollateral(address indexed from, address indexed to, uint256 share);
+    event LogBorrow(address indexed from, address indexed to, uint256 amount, uint256 part);
+    event LogRepay(address indexed from, address indexed to, uint256 amount, uint256 part);
 
     IVaultV1 public immutable vault;
     IERC20 public collateral;
@@ -84,6 +86,18 @@ contract TroveForCvx3crv {
         collateral = collateralToken_;
     }
 
+    function updateExchangeRate() public returns (bool updated, uint256 rate) {
+        (updated, rate) = oracle.get();
+
+        if (updated) {
+            exchangeRate = rate;
+            // emit LogExchangeRate(rate);
+        } else {
+            // Return the old rate if fetching wasn't successful
+            rate = exchangeRate;
+        }
+    }
+
     /// @notice Accrues the interest on the borrowed tokens and handles the accumulation of fees.
     function accrue() public {
         AccrueInfo memory _accrueInfo = accrueInfo;
@@ -109,67 +123,88 @@ contract TroveForCvx3crv {
         totalBorrow = _totalBorrow;
         accrueInfo = _accrueInfo;
 
-        console.log("Accrue", extraAmount);
+        emit LogAccrue(extraAmount);
     }
 
-    function _addTokens(
-        IERC20 token,
-        uint256 share,
-        uint256 total,
-        bool skim
-    ) internal {
-        // if (skim) {
-        //     require(share <= vault.balanceOf(token, address(this)).sub(total), "Cauldron: Skim too much");
-        // } else {
-        //     vault.transferShareFrom(token, msg.sender, share);
-        // }
-        vault.transferShareFrom(token, msg.sender, share);
-    }
+    // function _addTokens(
+    //     IERC20 token,
+    //     uint256 share,
+    //     uint256 total,
+    //     bool skim
+    // ) internal {
+    //     // if (skim) {
+    //     //     require(share <= vault.balanceOf(token, address(this)).sub(total), "Cauldron: Skim too much");
+    //     // } else {
+    //     //     vault.transferShareFrom(token, msg.sender, share);
+    //     // }
+    //     vault.transferShareFrom(token, msg.sender, share);
+    // }
 
-    function addCollateral(
+    function _addCollateral(
         address to,
         bool skim,
         uint256 share
-    ) external {
+    ) internal {
         userCollateralShare[to] = userCollateralShare[to] + share;
         uint256 oldTotalCollateralShare = totalCollateralShare;
         totalCollateralShare = oldTotalCollateralShare + share;
-        _addTokens(collateral, share, oldTotalCollateralShare, skim);
 
-        console.log("AddCollateral", skim ? address(vault) : msg.sender, to, share);
+        // _addTokens(collateral, share, oldTotalCollateralShare, skim);
+        vault.transferShareFrom(collateral, msg.sender, share);
+
+        emit LogAddCollateral(to, address(vault), share);
     }
 
-    function _removeCollateral(address to, uint256 share) internal {
+    function _withdrawCollateral(address to, uint256 share) internal {
         userCollateralShare[msg.sender] = userCollateralShare[msg.sender] - share;
         totalCollateralShare = totalCollateralShare - share;
 
         vault.transferShare(collateral, to, share);
 
-        console.log("RemoveCollateral", msg.sender, to, share);
+        emit LogWithdrawCollateral(address(vault), to, share);
     }
 
-    function removeCollateral(address to, uint256 share) external {
+    function withdrawCollateral(address to, uint256 share) external {
         // accrue must be called because we check solvency
         accrue();
-        _removeCollateral(to, share);
+        _withdrawCollateral(to, share);
     }
 
     function _borrow(address to, uint256 amount) internal returns (uint256 part, uint256 share) {
         (totalBorrow, part) = totalBorrow.add(amount, true);
+        console.log("totalBorrow", part);
         userBorrowPart[msg.sender] = userBorrowPart[msg.sender] + part;
-
+        console.log("userBorrow", userBorrowPart[msg.sender]);
         // As long as there are tokens on this contract you can 'mint'... this enables limiting borrows
         share = vault.toShare(usdaToken, amount);
+        console.log("share", share);
+
         vault.transferShare(usdaToken, to, share);
 
-        usdaToken.safeTransfer(to, amount);
-
-        console.log("Borrow", to, amount, part);
+        emit LogBorrow(msg.sender, to, amount, part);
     }
 
-    function borrow(address to, uint256 amount) external returns (uint256 part, uint256 share) {
-        accrue();
-        (part, share) = _borrow(to, amount);
+    // function borrow(address to, uint256 amount) external returns (uint256 part, uint256 share) {
+    //     accrue();
+    //     (part, share) = _borrow(to, amount);
+    // }
+
+    function multiBorrow(address to, uint _inAmount, uint _outAmount) external  returns (uint part, uint share) {
+        require(_inAmount + _outAmount > 0, "Trove: not all zero");
+        if (_inAmount > 0 && _outAmount == 0) {
+            // only add collateral
+            _addCollateral(to, true, _inAmount);
+            part = userBorrowPart[to];
+            share = userCollateralShare[to];
+        } else {
+            accrue();
+            if (_inAmount > 0) {
+                // add collateral before borrow
+                _addCollateral(to, true, _inAmount);
+            }
+            // borrow
+            (part, share) = _borrow(to, _outAmount);
+        }
     }
 
     function _repay(
@@ -181,26 +216,31 @@ contract TroveForCvx3crv {
         userBorrowPart[to] = userBorrowPart[to] - part;
 
         uint256 share = vault.toShare(usdaToken, amount);
-        vault.transferShare(usdaToken, skim ? address(vault) : msg.sender, share);
+        vault.transferShare(usdaToken, msg.sender, share);
 
-        console.log("Repay", address(vault), amount, part);
+        // console.log("Repay", address(vault), amount, part);
+        emit LogRepay(address(vault), to, amount, part);
     }
 
     function repay(
         address to,
-        bool skim,
         uint256 part
     ) public returns (uint256 amount) {
         accrue();
-        amount = _repay(to, skim, part);
+        amount = _repay(to, false, part);
     }
 
-    function withdrawFees() public {
+    function withdrawFees() external {
         accrue();
         uint256 _feesEarned = accrueInfo.feesEarned;
         vault.transferAmount(usdaToken, feeTo, _feesEarned);
         accrueInfo.feesEarned = 0;
 
+    }
+
+    function setFeeTo(address newFeeTo) external {
+        feeTo = newFeeTo;
+        // emit LogFeeTo(newFeeTo);
     }
 
 }

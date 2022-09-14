@@ -3,8 +3,13 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+import "hardhat/console.sol";
+
 
 contract Vault is Ownable {
+    using SafeERC20 for IERC20;
 
     event ContractSet(address indexed masterContract, bool enabled);
     event SwapperSet(address swapper, bool enabled);
@@ -26,13 +31,13 @@ contract Vault is Ownable {
 
     // Disables / enables a given master contract. If the master contract doesn't exist yet, it gets added to the map.
     // When a master contract is disabled, it cannot be deployed. However, this doesn't affect already deployed clones.
-    function setContract(address newContract, bool enabled) external onlyOwner() {
+    function setContract(address newContract, bool enabled) external {
         contracts[newContract] = enabled;
         emit ContractSet(newContract, enabled);
     }
 
     // Disables / enables a given Swapper. If the Swapper doesn't exist yet, it gets added to the map.
-    function setSwapper(address swapper, bool enabled) external onlyOwner() {
+    function setSwapper(address swapper, bool enabled) external {
         swappers[swapper] = enabled;
         emit SwapperSet(swapper, enabled);
     }
@@ -47,55 +52,62 @@ contract Vault is Ownable {
 
     // Transfers funds from the vault (for msg.sender) to the user. Can be called by any contract or EOA.
     function transferShare(IERC20 token, address to, uint256 share) external returns (uint256) {
-        shareOf[token][msg.sender] = shareOf[token][msg.sender] - share;
+        // shareOf[token][msg.sender] = shareOf[token][msg.sender] - share;
+        console.log("=== into transferShare ===");
         uint256 amount = share * totalBalance[token] / totalShare[token];
+        console.log("amount", amount);
         totalShare[token] = totalShare[token]- share;
         totalBalance[token] = totalBalance[token]- amount;
 
-        (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(0xa9059cbb, to, amount));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), "BentoBox: Transfer failed at ERC20");
+        // (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(0xa9059cbb, to, amount));
+        // console.log("transfer success?", success);
+        // require(success && (data.length == 0 || abi.decode(data, (bool))), "Vault: Transfer failed at ERC20");
+        token.safeTransfer(to, amount);
         return amount;
     }
 
     // Transfers funds from the user to the vault (for msg.sender). Can be called by any contract or EOA.
     function transferShareFrom(IERC20 token, address from, uint256 share) external returns (uint256) {
-        shareOf[token][msg.sender] = shareOf[token][msg.sender] + share;
+        // shareOf[token][msg.sender] = shareOf[token][msg.sender] + share;
         uint256 amount = totalShare[token] == 0 ? share : share * totalBalance[token] / totalShare[token];
         totalShare[token] = totalShare[token] + share;
         totalBalance[token] = totalBalance[token] + amount;
 
-        (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(0x23b872dd, from, address(this), amount));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), "BentoBox: TransferFrom failed at ERC20");
+        // (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(0x23b872dd, from, address(this), amount));
+        // require(success && (data.length == 0 || abi.decode(data, (bool))), "Vault: TransferFrom failed at ERC20");
+        token.safeTransferFrom(from, address(this), amount);
         return amount;
     }
 
     // Transfers funds from the vault (for msg.sender) to the user. Can be called by any contract or EOA.
     function transferAmount(IERC20 token, address to, uint256 amount) external returns (uint256) {
         uint256 share = amount * totalShare[token] / totalBalance[token];
-        shareOf[token][msg.sender] = shareOf[token][msg.sender] - share;
+        // shareOf[token][msg.sender] = shareOf[token][msg.sender] - share;
         totalShare[token] = totalShare[token] - share;
         totalBalance[token] = totalBalance[token] - amount;
 
-        (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(0xa9059cbb, to, amount));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), "BentoBox: Transfer failed at ERC20");
+        // (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(0xa9059cbb, to, amount));
+        // require(success && (data.length == 0 || abi.decode(data, (bool))), "Vault: Transfer failed at ERC20");
+        token.safeTransfer(to, amount);
         return share;
     }
 
     // Transfers funds from the user to the vault (for msg.sender). Can be called by any contract or EOA.
     function transferAmountFrom(IERC20 token, address from, uint256 amount) external returns (uint256) {
         uint256 share = totalShare[token] == 0 ? amount : amount * totalShare[token] / totalBalance[token];
-        shareOf[token][msg.sender] = shareOf[token][msg.sender] + share;
+        // shareOf[token][msg.sender] = shareOf[token][msg.sender] + share;
         totalShare[token] = totalShare[token] + share;
         totalBalance[token] = totalBalance[token] + amount;
 
-        (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(0x23b872dd, from, address(this), amount));
-        require(success && (data.length == 0 || abi.decode(data, (bool))), "BentoBox: TransferFrom failed at ERC20");
+        // (bool success, bytes memory data) = address(token).call(abi.encodeWithSelector(0x23b872dd, from, address(this), amount));
+        // require(success && (data.length == 0 || abi.decode(data, (bool))), "Vault: TransferFrom failed at ERC20");
+        token.safeTransferFrom(from, address(this), amount);
         return share;
     }
 
     // Register funds added to the vault (for msg.sender).
     function addShare(IERC20 token, uint256 share) external returns (uint256) {
-        shareOf[token][msg.sender] = shareOf[token][msg.sender] + share;
+        // shareOf[token][msg.sender] = shareOf[token][msg.sender] + share;
         uint256 amount = totalShare[token] == 0 ? share : share * totalBalance[token] / totalShare[token];
         totalShare[token] = totalShare[token] + share;
         totalBalance[token] = totalBalance[token] + amount;
@@ -105,7 +117,7 @@ contract Vault is Ownable {
     // Register funds added to the vault (for msg.sender).
     function addAmount(IERC20 token, uint256 amount) external returns (uint256) {
         uint256 share = totalShare[token] == 0 ? amount : amount * totalShare[token] / totalBalance[token];
-        shareOf[token][msg.sender] = shareOf[token][msg.sender] + share;
+        // shareOf[token][msg.sender] = shareOf[token][msg.sender] + share;
         totalShare[token] = totalShare[token] + share;
         totalBalance[token] = totalBalance[token] + amount;
         return share;

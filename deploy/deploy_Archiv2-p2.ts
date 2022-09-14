@@ -10,8 +10,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     console.log("===> deployed Vault", (await deployments.get("Vault")).address)
 
-    await deploy("TroveForCvx3crv", {
-        contract: "TroveForCvx3crv",
+    await deploy("Cvx3crvTrove", {
+        contract: "Cvx3crvTrove",
         from: deployer,
         args: [
             (await deployments.get("Vault")).address,
@@ -27,5 +27,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 }
 
 export default func
-func.tags = ["TroveForCvx3crv"]
+func.tags = ["Cvx3crvTrove"]
 func.dependencies = ["Oracle", "USDAMock", "Cvx3crvMock", "Vault"]
