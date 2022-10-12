@@ -37,7 +37,7 @@ const config: HardhatUserConfig = {
   },
   paths: {
     // sources: './contracts/CurveHandle',    // special dir
-    sources: './contracts/Archi-contracts-v2',    // special dir
+    sources: './contracts/MIMLevSwapper',    // special dir
     artifacts: "./build/artifacts",
     cache: "./build/cache",
   },

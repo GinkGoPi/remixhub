@@ -7,10 +7,12 @@
     "@openzeppelin/contracts": "^4.7.3",
     "@typechain/truffle-v5": "^8.0.1",
     "@uniswap/v3-periphery": "^1.4.1",
+    "commander": "^9.4.1",
     "ethernal": "^0.15.0",
     "hardhat-deploy": "^0.11.12",
     "hardhat-ethernal": "^1.1.1",
-    "hardhat-typechain": "^0.3.5"
+    "hardhat-typechain": "^0.3.5",
+    "prettier": "^2.7.1"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
