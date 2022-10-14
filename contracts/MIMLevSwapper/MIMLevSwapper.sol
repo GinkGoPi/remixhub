@@ -115,7 +115,7 @@ contract MIMLevSwapper {
         MIM3LP3CRV.approve(address(convexBooster), type(uint).max);
     }
 
-    function deposit(uint256 _amount, uint256 _leverage) external returns (bool) {
+    function deposit(uint256 _amount, uint256 _leverage) external returns (uint margin, uint coll, uint debt) {
         // require(activePool != address(0x0), "activePool address error.");
         // require(_amount >= 2*1e12, "out of min.");
 
@@ -163,8 +163,8 @@ contract MIMLevSwapper {
         // // lptoken -> cvxlptoken 
         uint256 pid = BaseReward.pid();
         console.log("--> to deposit", pid);
-        // convexBooster.deposit(pid, lpTokenAmount, false);
-        convexBooster.deposit(pid, lpTokenAmount, true);
+        convexBooster.deposit(pid, lpTokenAmount, false);
+        // convexBooster.deposit(pid, lpTokenAmount, true);
         
         uint256 newCvxLpTokenAmount = IERC20(cvxLpToken).balanceOf(address(this));
         uint256 cvxlpTokenAmount = newCvxLpTokenAmount - oldCvxLpTokenAmount;
@@ -185,7 +185,9 @@ contract MIMLevSwapper {
         // info.interestTime = block.timestamp;
         // ILeverageManager(leverageManager).deposit(msg.sender, strategy, info);
         
-        return true;
+        margin = depositAmount;
+        coll = lpTokenAmount + depositAmount;
+        debt = borrow;
     }
 
     function _expected(uint256 _amount, uint256 _collateral) internal view returns (uint256, uint256) {
