@@ -7,7 +7,7 @@ import dotenv from "dotenv"
 dotenv.config()
 const { DEPLOYER_KEY } = process.env
 
-// import "hardhat-ethernal"
+import "hardhat-ethernal"
 
 
 const config: HardhatUserConfig = {
