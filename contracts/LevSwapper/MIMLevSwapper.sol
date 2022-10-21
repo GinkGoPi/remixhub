@@ -123,7 +123,7 @@ contract MIMLevSwapper {
         // uint leverage = _leverage;
  
         // has collateral transfer to vault as margin
-        MIM3LP3CRV.transferFrom(msg.sender, address(this), depositAmount);
+        // MIM3LP3CRV.transferFrom(msg.sender, address(this), depositAmount);
         console.log("--> MIM3LP3CRV", MIM3LP3CRV.balanceOf(address(this)));
         // leverage 0x0 -> LUSD
         (uint256 borrow, uint256 fee) = _expected(depositAmount, _leverage);
@@ -163,8 +163,8 @@ contract MIMLevSwapper {
         // // lptoken -> cvxlptoken 
         uint256 pid = BaseReward.pid();
         console.log("--> to deposit", pid);
-        convexBooster.deposit(pid, lpTokenAmount, false);
-        // convexBooster.deposit(pid, lpTokenAmount, true);
+        // convexBooster.deposit(pid, lpTokenAmount, false);
+        convexBooster.deposit(pid, lpTokenAmount, true);
         
         uint256 newCvxLpTokenAmount = IERC20(cvxLpToken).balanceOf(address(this));
         uint256 cvxlpTokenAmount = newCvxLpTokenAmount - oldCvxLpTokenAmount;

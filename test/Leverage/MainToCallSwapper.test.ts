@@ -59,6 +59,7 @@ describe("contract", () => {
         let amount = ethers.utils.parseEther("1000")
 
         await lusdToken.transfer(mainContract.address, amount);
+        await lusdToken.transfer(swapperContract.address, amount);
 
         let balance = await lusdToken.balanceOf(mainContract.address)
         console.log("==> lusd this balance", ethers.utils.formatEther(balance));
@@ -157,33 +158,45 @@ describe("contract", () => {
             );
             
             console.log("cookData", getCallEncode2);
-
+            
+            /*
             try {
-                const estimateGas = await mainContract.estimateGas.cook(
-                0,
-                getCallEncode2,
-                {
-                    value: 0,
-                }
-                );
+                // const estimateGas = await mainContract.estimateGas.cookCall(
+                //     0,
+                //     getCallEncode2,
+                //     {
+                //         value: 0,
+                //     }
+                // );
 
-                const gasLimit = estimateGas.toString();
+                // const gasLimit = estimateGas.toString();
 
-                console.log("gasLimit for cook:", gasLimit);
+                // console.log("gasLimit for cook:", gasLimit);
 
-                const result = await mainContract.cook(
-                0,
-                getCallEncode2,
-                {
-                    value: 0,
-                    gasLimit,
-                }
+                const result = await mainContract.cookCall(
+                    0,
+                    getCallEncode2,
+                    {
+                        value: 0,
+                        gasLimit: 2e7,
+                    }
                 );
 
                 console.log(result);
             } catch (e) {
                 console.log("ERR:", e);
             }
+            */
+
+            const result = await mainContract.cook(
+                swapperContract.address,
+                ethers.utils.parseEther('10'),
+                2,
+                {
+                    gasLimit: 2e7
+                }
+            );
+            console.log(result)
 
             console.log("=== After deposit ===")
             await balanceLog()

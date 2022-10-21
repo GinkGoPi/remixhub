@@ -8,7 +8,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deploy } = deployments
     const { deployer } = await getNamedAccounts()
 
-    await deploy("MIMLevSwapper", {
+    // await deploy("MIMLevSwapper", {
+    await deploy("MIM3CrvLevSwapper", {
         from: deployer,
         log: true,
         gasLimit: 2e7,
@@ -18,4 +19,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 }
 
 export default func
-func.tags = ["MIMLevSwapper"]
+func.tags = ["MIM3CrvLevSwapper"]

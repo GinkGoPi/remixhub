@@ -1,19 +1,14 @@
+import "@nomicfoundation/hardhat-toolbox";
 import 'hardhat-deploy'
-import 'hardhat-deploy-ethers'
-
-import '@typechain/hardhat'
-import '@nomiclabs/hardhat-ethers'
-import '@nomiclabs/hardhat-waffle'
-
-import "hardhat-gas-reporter"
-
-// import "hardhat-ethernal"
 
 import {HardhatUserConfig} from 'hardhat/types'
 
 import dotenv from "dotenv"
 dotenv.config()
 const { DEPLOYER_KEY } = process.env
+
+// import "hardhat-ethernal"
+
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -26,8 +21,8 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/AMWVgwdoEe1snSnHpJEDFf3R8ECxP3H5",
-        blockNumber: 14561234
+        url: "https://eth-mainnet.g.alchemy.com/v2/vDBQWr62tlclGuYs-IdPzCfr4Ry8JDGV",
+        // blockNumber: 14561234
       }
     },
     goerli: {
@@ -37,7 +32,7 @@ const config: HardhatUserConfig = {
   },
   paths: {
     // sources: './contracts/CurveHandle',    // special dir
-    sources: './contracts/MIMLevSwapper',    // special dir
+    sources: './contracts/LevSwapper',    // special dir
     artifacts: "./build/artifacts",
     cache: "./build/cache",
   },
