@@ -7,7 +7,7 @@ import dotenv from "dotenv"
 dotenv.config()
 const { DEPLOYER_KEY } = process.env
 
-import "hardhat-ethernal"
+// import "hardhat-ethernal"
 
 
 const config: HardhatUserConfig = {
@@ -22,7 +22,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: "https://eth-mainnet.g.alchemy.com/v2/vDBQWr62tlclGuYs-IdPzCfr4Ry8JDGV",
-        // blockNumber: 14561234
+        blockNumber: 15666666
       }
     },
     goerli: {
