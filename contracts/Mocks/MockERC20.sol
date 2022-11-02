@@ -7,5 +7,9 @@ contract MockERC20 is ERC20 {
     constructor (uint _initialSupply, string memory _name, string memory _symbol) ERC20(_name, _symbol) {
         _mint(msg.sender, _initialSupply);
     }
+
+    function mint(address to, uint256 amount) external {
+        _mint(to, amount);
+    }
 }
 

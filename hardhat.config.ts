@@ -1,7 +1,6 @@
+import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-import 'hardhat-deploy'
-
-import {HardhatUserConfig} from 'hardhat/types'
+import "hardhat-deploy";
 
 import dotenv from "dotenv"
 dotenv.config()
@@ -13,6 +12,12 @@ const { DEPLOYER_KEY } = process.env
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.7',
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
   },
   namedAccounts: {
     deployer: 0,
@@ -32,7 +37,7 @@ const config: HardhatUserConfig = {
   },
   paths: {
     // sources: './contracts/CurveHandle',    // special dir
-    sources: './contracts/LevSwapper',    // special dir
+    sources: './contracts/DeterministicDeploy',    // special dir
     artifacts: "./build/artifacts",
     cache: "./build/cache",
   },
