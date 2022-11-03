@@ -4,7 +4,7 @@ import "hardhat-deploy";
 
 import dotenv from "dotenv"
 dotenv.config()
-const { DEPLOYER_KEY } = process.env
+const { ALCHEMY_KEY, DEPLOYER_KEY } = process.env
 
 // import "hardhat-ethernal"
 
@@ -26,14 +26,19 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: "https://eth-mainnet.g.alchemy.com/v2/vDBQWr62tlclGuYs-IdPzCfr4Ry8JDGV",
+        url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_KEY}`,
         blockNumber: 15666666
       }
     },
     goerli: {
-      url: "https://eth-goerli.alchemyapi.io/v2/AMWVgwdoEe1snSnHpJEDFf3R8ECxP3H5",
+      url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+      accounts: [`${DEPLOYER_KEY}`]
+    },
+    remote: {
+      url: "http://47.88.101.227/rpc",
       accounts: [`${DEPLOYER_KEY}`]
     }
+
   },
   paths: {
     // sources: './contracts/CurveHandle',    // special dir
