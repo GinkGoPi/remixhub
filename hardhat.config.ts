@@ -26,8 +26,12 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_KEY}`,
+        url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
         blockNumber: 15666666
+      },
+      mining: {
+        auto: false,
+        interval: [3000, 6000]
       }
     },
     goerli: {
@@ -42,7 +46,7 @@ const config: HardhatUserConfig = {
   },
   paths: {
     // sources: './contracts/CurveHandle',    // special dir
-    sources: './contracts/DeterministicDeploy',    // special dir
+    sources: './contracts/RewardDistribute',    // special dir
     artifacts: "./build/artifacts",
     cache: "./build/cache",
   },

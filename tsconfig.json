@@ -9,5 +9,5 @@
         "declaration": true,
         "sourceMap": true
     },
-    "include": ["hardhat.config.ts", "./deploy", "./test"],
+    "include": ["hardhat.config.ts", "./deploy", "./test", "./script"],
 }
