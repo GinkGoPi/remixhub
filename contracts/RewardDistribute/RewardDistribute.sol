@@ -95,35 +95,67 @@ contract RewardDistribute {
     ) external returns (uint256 unstakeAmount) {
         totalColl -= amount;
         userColl[msg.sender] -= amount;
-        uint256 oldBalance = MIM3LP3CRV.balanceOf(address(this));
-        console.log("oldBlance", oldBalance);
-        getBalance();
+
+        // Warning: once withdraw all rewards
         baseReward.withdrawAndUnwrap(amount, claim);
-        uint256 newBalance = MIM3LP3CRV.balanceOf(address(this));
-        console.log("newBalance", newBalance);
-        getBalance();
-        unstakeAmount = newBalance - oldBalance;
-        console.log("===> unstake token", unstakeAmount);
+
+        unstakeAmount = MIM3LP3CRV.balanceOf(address(this));
+        // unstakeAmount = newBalance - oldBalance;
+        console.log("===> unstake token transfer to vault", unstakeAmount);
         // MIM3LP3CRV.transfer(vault, unstakeAmount);
-        if (claim) {
-            // TODO: getReward for vault will be all, how to distribute for users 
-            // address[] memory rewardTokens = baseReward.extraRewards();
-            uint256 extraRewardsLength = baseReward.extraRewardsLength();
-            for(uint i=0; i < extraRewardsLength; i++) {
-                address rewardToken = baseReward.extraRewards(i);
-                if (rewardToken == address(0x0)) {
-                    break;
-                }
-                (bool success, bytes memory data) = rewardToken.call(abi.encodeWithSelector(SIG_BALANCEOF, address(this)));
-                require(success && (data.length == 32), "get reward token balanceOf failed.");
-                uint256 rewardBalance = abi.decode(data, (uint256));
-                console.log("===> reward", rewardToken, rewardBalance);
-                // if (rewardBalance > 0) {
-                //     (bool tranferSuccess, bytes memory transferData) = rewardToken.call(abi.encodeWithSelector(SIG_TRANSFER, reciever, rewardBalance));
-                //     require(tranferSuccess && (transferData.length == 0 || abi.decode(transferData, (bool))), "reward token transfer failed");
-                // }
-            }
-        }
+
+        console.log("== TODO distribute reward ==");
+        getBalance();
+
+        
+        // uint256 cvxNew = CVX.balanceOf(address(this));
+        // uint256 crvNew = CRV.balanceOf(address(this));
+
+        // uint256 rewardCVX = cvxNew - cvxSnap;
+        // uint256 rewardCRV = crvNew - crvSnap;
+        // CRV.transfer(msg.sender, rewardCRV);
+        // CVX.transfer(msg.sender, rewardCVX);
+        
+        // if (claim) {
+        //     // TODO: getReward for vault will be all, how to distribute for users 
+        //     // address[] memory rewardTokens = baseReward.extraRewards();
+        //     uint256 extraRewardsLength = baseReward.extraRewardsLength();
+        //     for(uint i=0; i < extraRewardsLength; i++) {
+        //         address vbRewardPool = baseReward.extraRewards(i);
+        //         if (vbRewardPool == address(0x0)) {
+        //             break;
+        //         }
+        //         (bool success, bytes memory data) = vbRewardPool.call(abi.encodeWithSelector(SIG_BALANCEOF, address(this)));
+        //         require(success && (data.length == 32), "get reward token balanceOf failed.");
+        //         uint256 rewardBalance = abi.decode(data, (uint256));
+        //         console.log("===> vbRewardPool", vbRewardPool, rewardBalance);
+        //         if (rewardBalance > 0) {
+        //             (bool ss, bytes memory dd) = vbRewardPool.call(abi.encodeWithSignature("rewardToken()"));
+        //             require(ss, "get reward token failed");
+        //             address rewardToken = abi.decode(dd, (address));
+        //             (bool sss, bytes memory ddd) = rewardToken.call(abi.encodeWithSelector(SIG_BALANCEOF, address(this)));
+        //             require(sss, "get reward token failed");
+        //             uint256 rwdBal = abi.decode(ddd, (uint256));
+        //             console.log("==> rewardToken", rewardToken);
+        //             (bool tranferSuccess, bytes memory transferData) = rewardToken.call(abi.encodeWithSelector(SIG_TRANSFER, reciever, rewardBalance));
+        //             require(tranferSuccess && (transferData.length == 0 || abi.decode(transferData, (bool))), "reward token transfer failed");
+        //         }
+        //     }
+        // }
     }
+
+    uint256 public cvx_reward_remain;
+    uint256 public crv_reward_remain;
+    function _calaCvxCrvReward() internal {
+        uint256 cvxBal = CVX.balanceOf(address(this));
+        uint256 crvBal = CRV.balanceOf(address(this));
+
+        // distribute rate
+        
+    }
+
+    // function _calaExtractReward() internal {
+        
+    // }
 
 }

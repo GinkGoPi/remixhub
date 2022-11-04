@@ -28,10 +28,6 @@ const config: HardhatUserConfig = {
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
         blockNumber: 15666666
-      },
-      mining: {
-        auto: false,
-        interval: [3000, 6000]
       }
     },
     goerli: {
