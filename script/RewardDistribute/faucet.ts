@@ -13,7 +13,8 @@ async function main() {
     const tokenAddr = "0x5a6A4D54456819380173272A5E8E9B9904BdF41B"
     const impersonate = "0xe896e539e557BC751860a7763C8dD589aF1698Ce"
 
-    let amount = ethers.utils.parseEther("100")
+    let amountSmall = ethers.utils.parseEther("200")
+    let amountLarge = ethers.utils.parseEther("5000")
 
     if (!impersonate) {
         console.log('[ ERROR ] impersonate must be an address')
@@ -37,8 +38,8 @@ async function main() {
     const token = new ethers.Contract(tokenAddr, jsonAbi, impersonatedSigner);
     let total = await token.balanceOf(impersonate)
 
-    await token.transfer(signer.address, amount);
-    await token.transfer(bob.address, amount);
+    await token.transfer(signer.address, amountSmall);
+    await token.transfer(bob.address, amountLarge);
 
     console.log("[ INFO ] after alice balance", await token.balanceOf(signer.address));
     console.log("[ INFO ] after bob the balance", await token.balanceOf(bob.address));

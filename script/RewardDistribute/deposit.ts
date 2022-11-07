@@ -30,21 +30,24 @@ async function approve() {
 async function main() {
     const [signer, bob] = await ethers.getSigners();
 
-    await approve();
-
     const contract = (await ethers.getContractAt(
         "RewardDistribute", 
         (await deployments.get("RewardDistribute")).address
     ))
 
+    console.log("RewardDistribute address", contract.address)
+
+    await approve();
+
     let amount = ethers.utils.parseEther('100')
     await contract.connect(signer).depositAndStake(amount)
 
-    await contract.getBalance()
+    await contract.connect(signer).getUserBalance()
 
+    amount = ethers.utils.parseEther('5000')
     await contract.connect(bob).depositAndStake(amount)
 
-    await contract.getBalance()
+    await contract.connect(bob).getUserBalance()
 
 }   
 

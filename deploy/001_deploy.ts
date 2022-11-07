@@ -5,7 +5,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const { deployments, getNamedAccounts } = hre
-    const { deploy } = deployments
+    const { deploy, execute } = deployments
     const { deployer } = await getNamedAccounts()
 
     await deploy("RewardDistribute", {
@@ -13,6 +13,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         log: true,
         skipIfAlreadyDeployed: true
     })
+
+    await execute(
+        "RewardDistribute",
+        { from: deployer, log: true },
+        "addRewards"
+    )
 
 }
 

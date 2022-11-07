@@ -9,13 +9,13 @@ async function main() {
         (await deployments.get("RewardDistribute")).address
     ))
 
-    // let amount = ethers.utils.parseEther('100')
-    // await contract.connect(signer).convexUnstake(amount, true, chris.address)
+    let res = await contract.rewardLength()
+    console.log("==> rewards length", res)
+    
+    await contract.getBalance()
 
-    // await contract.connect(signer).getUserBalance()
-
-    let amountL = ethers.utils.parseEther('5000')
-    await contract.connect(bob).convexUnstake(amountL, true, chris.address)
+    // console.log("=== signer ===")
+    await contract.connect(signer).getUserBalance()
 
     await contract.connect(bob).getUserBalance()
 
