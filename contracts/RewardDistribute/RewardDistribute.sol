@@ -21,6 +21,7 @@ interface IConvexRewards{
     function withdrawAndUnwrap(uint256 amount, bool claim) external returns(bool);
     function extraRewards(uint256 index) external view returns (address);
     function extraRewardsLength() external view returns (uint256);
+    function rewardToken() external view returns (address);
 
     function balanceOf(address account) external view returns (uint256);
 }
@@ -44,8 +45,168 @@ contract RewardDistribute {
     uint256 public totalColl;
     mapping(address => uint256) public userColl;
 
+    struct RewardType {
+        address reward_token;
+        address reward_pool;
+        uint128 reward_integral;
+        uint128 reward_remaining;
+        // mapping(address => uint256) reward_integral_for;
+        // mapping(address => uint256) claimable_reward;
+    }
+
+    // mapping(address => uint256) public reward_integral_for;
+    // mapping(address => uint256) public claimable_reward;
+
+    uint256 public cvx_reward_integral;
+    uint256 public cvx_reward_remaining;
+    mapping(address => uint256) public cvx_reward_integral_for;
+    mapping(address => uint256) public cvx_claimable_reward;
+
+    //rewards
+    RewardType[] public rewards;
+
+    address public constant collateralVault = 0xF5BCE5077908a1b7370B9ae04AdC565EBd643966;
+
     constructor() {
         MIM3LP3CRV.approve(address(baseBooster), type(uint256).max);
+    }
+
+    function addRewards() external {
+        address mainPool = address(baseReward);
+
+        if (rewards.length == 0) {
+            rewards.push(
+                RewardType({
+                    reward_token: address(CRV),
+                    reward_pool: mainPool,
+                    reward_integral: 0,
+                    reward_remaining: 0
+                })
+            );
+        }
+
+        uint256 extraCount = IConvexRewards(mainPool).extraRewardsLength();
+        uint256 startIndex = rewards.length - 1;
+        for (uint256 i = startIndex; i < extraCount; i++) {
+            address extraPool = IConvexRewards(mainPool).extraRewards(i);
+            rewards.push(
+                RewardType({
+                    reward_token: IConvexRewards(extraPool).rewardToken(),
+                    reward_pool: extraPool,
+                    reward_integral: 0,
+                    reward_remaining: 0
+                })
+            );
+        }
+    }
+
+    function rewardLength() external view returns (uint256) {
+        return rewards.length;
+    }
+
+    function _calcCvxIntegral(address _account, uint256 _balance, uint256 _supply, bool _isClaim) internal {
+
+        uint256 bal = IERC20(address(CVX)).balanceOf(address(this));
+        uint256 d_cvxreward = bal - cvx_reward_remaining;
+        console.log("---> cvx new", d_cvxreward);
+
+        if (_supply > 0 && d_cvxreward > 0) {
+            cvx_reward_integral = cvx_reward_integral + d_cvxreward * 1e20/_supply;
+        }
+        console.log("---> cvx_reward_integral", cvx_reward_integral);
+        
+        //update user integrals for cvx
+        //do not give rewards to address 0
+        if (_account == address(0)) return;
+        if (_account == collateralVault) return;
+
+        uint userI = cvx_reward_integral_for[_account];
+        console.log("---> userI", userI);
+
+        if(_isClaim || userI < cvx_reward_integral){
+            console.log("---> user coll", _balance);
+            uint256 receiveable = cvx_claimable_reward[_account] + _balance * (cvx_reward_integral - userI)/1e20;
+            console.log("---> receiveable", receiveable);
+            if(_isClaim){
+                if(receiveable > 0){
+                    cvx_claimable_reward[_account] = 0;
+                    IERC20(address(CVX)).safeTransfer(_account, receiveable);
+                    bal = bal - receiveable;
+                }
+            }else{
+                cvx_claimable_reward[_account] = receiveable;
+            }
+            cvx_reward_integral_for[_account] = cvx_reward_integral;
+        }
+
+        //update reward total
+        if(bal != cvx_reward_remaining){
+            cvx_reward_remaining = bal;
+        }
+    }
+
+    function _calcRewardIntegral(uint256 _index, address _account, uint256 _balance, uint256 _supply, bool _isClaim) internal{
+        RewardType storage reward = rewards[_index];
+
+        //get difference in balance and remaining rewards
+        //getReward is unguarded so we use reward_remaining to keep track of how much was actually claimed
+        uint256 bal = IERC20(reward.reward_token).balanceOf(address(this));
+        // uint256 d_reward = bal.sub(reward.reward_remaining);
+
+        if (_supply > 0 && bal - reward.reward_remaining > 0) {
+            reward.reward_integral = reward.reward_integral + uint128((bal - reward.reward_remaining)* 1e20/_supply);
+        }
+
+        console.log("---> reward_integral", reward.reward_integral);
+        //update user integrals
+        //do not give rewards to address 0
+        if (_account == address(0)) return;
+        if (_account == collateralVault) return;
+
+        // uint userI = reward.reward_integral_for[_account];
+        // if(_isClaim || userI < reward.reward_integral){
+        //     if(_isClaim){
+        //         uint256 receiveable = reward.claimable_reward[_account] + _balance * (uint256(reward.reward_integral - userI))/1e20;
+        //         if(receiveable > 0){
+        //             reward.claimable_reward[_account] = 0;
+        //             IERC20(reward.reward_token).safeTransfer(_account, receiveable);
+        //             bal = bal - receiveable;
+        //         }
+        //     }else{
+        //         reward.claimable_reward[_account] = (reward.claimable_reward[_account] - _balance) * (uint256(reward.reward_integral - userI))/1e20;
+        //     }
+        //     reward.reward_integral_for[_account] = reward.reward_integral;
+        // }
+
+        uint256 receiveable = _balance * uint256(reward.reward_integral)/1e20;
+        console.log("---> receiveable", receiveable);
+        if(receiveable > 0){
+            IERC20(reward.reward_token).safeTransfer(_account, receiveable);
+            bal = bal - receiveable;
+        }
+
+        //update remaining reward here since balance could have changed if claiming
+        if(bal !=  reward.reward_remaining){
+            reward.reward_remaining = uint128(bal);
+        }
+    }
+
+    function _checkpointAndClaim(address _account) internal {
+
+        uint256 supply = totalColl;
+        // uint256[2] memory depositedBalance;
+        uint256 depositedBalance = userColl[_account]; //only do first slot
+        
+        // IRewardStaking(convexPool).getReward(address(this), true);
+        // IConvexRewards()
+
+        uint256 rewardCount = rewards.length;
+        for (uint256 i = 0; i < rewardCount; i++) {
+            console.log("==> calc reward + ", i);
+           _calcRewardIntegral(i,_account,depositedBalance,supply,true);
+        }
+        console.log("==> calc cvx");
+        _calcCvxIntegral(_account,depositedBalance,supply,true);
     }
 
     function getPid() external view returns (uint256) {
@@ -53,6 +214,8 @@ contract RewardDistribute {
     }
 
     function getUserBalance() external view {
+        uint256 coll = userColl[msg.sender];
+        console.log("-> user coll", coll);
         uint256 lptoken = MIM3LP3CRV.balanceOf(msg.sender);
         console.log("-> user lptoken", lptoken);
         uint256 cvx = CVX.balanceOf(msg.sender);
@@ -64,6 +227,7 @@ contract RewardDistribute {
     }
 
     function getBalance() public view {
+        console.log("-> total coll", totalColl);
         uint256 lptoken = MIM3LP3CRV.balanceOf(address(this));
         console.log("-> lptoken", lptoken);
         uint256 cvx = CVX.balanceOf(address(this));
@@ -93,20 +257,33 @@ contract RewardDistribute {
         bool claim, 
         address reciever
     ) external returns (uint256 unstakeAmount) {
-        totalColl -= amount;
-        userColl[msg.sender] -= amount;
-
         // Warning: once withdraw all rewards
         baseReward.withdrawAndUnwrap(amount, claim);
 
         unstakeAmount = MIM3LP3CRV.balanceOf(address(this));
         // unstakeAmount = newBalance - oldBalance;
         console.log("===> unstake token transfer to vault", unstakeAmount);
-        // MIM3LP3CRV.transfer(vault, unstakeAmount);
+        MIM3LP3CRV.transfer(msg.sender, unstakeAmount);
 
         console.log("== TODO distribute reward ==");
         getBalance();
 
+        if (claim) {
+            // _checkpointAndClaim(msg.sender);
+            address _account = msg.sender;
+            uint256 _collAmount = userColl[_account];
+            uint256 _totalColl = totalColl;
+            uint256 rewardCount = rewards.length;
+            for (uint256 i = 0; i < rewardCount; i++) {
+                console.log("==> calc reward + ", i);
+            _calcRewardIntegral(i, _account, _collAmount, _totalColl, true);
+            }
+            console.log("==> calc cvx");
+            _calcCvxIntegral(_account, _collAmount, _totalColl,true);
+        }
+
+        totalColl -= amount;
+        userColl[msg.sender] -= amount;
         
         // uint256 cvxNew = CVX.balanceOf(address(this));
         // uint256 crvNew = CRV.balanceOf(address(this));
@@ -144,15 +321,15 @@ contract RewardDistribute {
         // }
     }
 
-    uint256 public cvx_reward_remain;
-    uint256 public crv_reward_remain;
-    function _calaCvxCrvReward() internal {
-        uint256 cvxBal = CVX.balanceOf(address(this));
-        uint256 crvBal = CRV.balanceOf(address(this));
+    // uint256 public cvx_reward_remain;
+    // uint256 public crv_reward_remain;
+    // function _calaCvxCrvReward() internal {
+    //     uint256 cvxBal = CVX.balanceOf(address(this));
+    //     uint256 crvBal = CRV.balanceOf(address(this));
 
-        // distribute rate
-        
-    }
+    //     // distribute rate
+
+    // }
 
     // function _calaExtractReward() internal {
         
